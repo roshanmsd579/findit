@@ -38,15 +38,29 @@ findit/
 
 ## Demo Credentials
 
-All seeded accounts use the password below:
+The current local database uses the password below for seeded demo users:
 
 - Password: `password123`
 
-Recommended accounts:
+Working seeded accounts:
 
-- Student: `aryan@university.edu`
-- Faculty: `sunita@university.edu`
-- Admin: `admin@university.edu`
+- `rahul@example.com`
+- `priya@example.com`
+- `amit@example.com`
+- `sunita@example.com`
+- `vikram@example.com`
+- `anjali@example.com`
+- `deepak@example.com`
+- `meera@example.com`
+- `ravi@example.com`
+- `admin@findit.com` (admin)
+
+Additional user-created accounts may exist in your database with different passwords.
+
+Use one of the following options:
+
+1. Recreate `findit_db`, then re-import `database/setup.sql` and `database/seed.sql`.
+2. Register a new account from `register.php` and log in with that account.
 
 ## Core Features
 
