@@ -1,45 +1,72 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+require_once __DIR__ . '/db.php';
+$unreadNotif = 0;
+$unreadChat = 0;
+if (isset($_SESSION['user_id'])) {
+    $s = $pdo->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+    $s->execute([$_SESSION['user_id']]);
+    $unreadNotif = (int) $s->fetchColumn();
+
+    $s = $pdo->prepare('SELECT COUNT(*) FROM chat_messages WHERE receiver_id = ? AND is_read = 0');
+    $s->execute([$_SESSION['user_id']]);
+    $unreadChat = (int) $s->fetchColumn();
 }
 
-$currentPage = basename($_SERVER['PHP_SELF'] ?? '');
-
-function navActive(string $file, string $currentPage): string
-{
-    return $file === $currentPage ? 'active' : '';
-}
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="/findit/index.php">
-      <span class="brand-icon">◈</span>
-      <span>FindIt</span>
+    <a class="navbar-brand" href="<?= BASE_URL ?>index.php">
+      <span class="brand-icon">◈</span> Find<strong>It</strong>
+      <small class="brand-sub">Campus Portal</small>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#finditNav" aria-controls="finditNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="bi bi-list text-white fs-4"></i>
     </button>
-
-    <div class="collapse navbar-collapse" id="finditNav">
-      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-        <li class="nav-item"><a class="nav-link <?= navActive('index.php', $currentPage); ?>" href="/findit/index.php">Home</a></li>
-        <li class="nav-item"><a class="nav-link <?= navActive('search.php', $currentPage); ?>" href="/findit/search.php">Search</a></li>
-        <li class="nav-item"><a class="nav-link <?= navActive('reports.php', $currentPage); ?>" href="/findit/reports.php">Reports</a></li>
-        <li class="nav-item"><a class="nav-link <?= navActive('create-report.php', $currentPage); ?>" href="/findit/create-report.php">Report Lost/Found</a></li>
-
-        <?php if (!empty($_SESSION['user_id'])): ?>
-          <li class="nav-item"><a class="nav-link <?= navActive('dashboard.php', $currentPage); ?>" href="/findit/dashboard.php">Dashboard</a></li>
-          <?php if (!empty($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-            <li class="nav-item"><a class="nav-link <?= navActive('admin.php', $currentPage); ?>" href="/findit/admin.php">Admin</a></li>
-          <?php endif; ?>
-          <li class="nav-item"><a class="nav-link" href="/findit/logout.php">Logout</a></li>
-        <?php else: ?>
-          <li class="nav-item"><a class="nav-link <?= navActive('login.php', $currentPage); ?>" href="/findit/login.php">Login</a></li>
-          <li class="nav-item">
-            <a class="btn btn-primary-custom px-3 py-2 ms-lg-2" href="/findit/register.php">Register</a>
-          </li>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto gap-1">
+        <li class="nav-item"><a class="nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>" href="<?= BASE_URL ?>index.php">Home</a></li>
+        <li class="nav-item"><a class="nav-link <?= $currentPage === 'search.php' ? 'active' : '' ?>" href="<?= BASE_URL ?>search.php">Search</a></li>
+        <li class="nav-item"><a class="nav-link <?= $currentPage === 'reports.php' ? 'active' : '' ?>" href="<?= BASE_URL ?>reports.php">Reports</a></li>
+        <?php if (isset($_SESSION['user_id'])): ?>
+          <li class="nav-item"><a class="nav-link btn-accent-nav <?= $currentPage === 'create-report.php' ? 'active' : '' ?>" href="<?= BASE_URL ?>create-report.php"><i class="bi bi-plus-circle"></i> New Report</a></li>
         <?php endif; ?>
       </ul>
+      <div class="d-flex align-items-center gap-2">
+        <button class="theme-toggle" id="theme-toggle" type="button">
+          <span id="theme-icon">☀️</span>
+          <span id="theme-label" class="d-none d-lg-inline">Light</span>
+        </button>
+
+        <?php if (isset($_SESSION['user_id'])): ?>
+          <a href="<?= BASE_URL ?>dashboard.php" class="nav-icon-btn position-relative" title="Chats">
+            <i class="bi bi-chat-dots"></i>
+            <?php if ($unreadChat > 0): ?><span class="notif-badge"><?= $unreadChat ?></span><?php endif; ?>
+          </a>
+          <a href="<?= BASE_URL ?>dashboard.php#notifications" class="nav-icon-btn position-relative" title="Notifications">
+            <i class="bi bi-bell"></i>
+            <?php if ($unreadNotif > 0): ?><span class="notif-badge"><?= $unreadNotif ?></span><?php endif; ?>
+          </a>
+          <div class="dropdown">
+            <button class="user-menu-btn dropdown-toggle" data-bs-toggle="dropdown" type="button" aria-expanded="false">
+              <div class="avatar-sm"><?= h(strtoupper(substr($_SESSION['user_name'], 0, 2))) ?></div>
+              <span class="d-none d-lg-inline"><?= h($_SESSION['user_name']) ?></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-dark-custom">
+              <li><a class="dropdown-item" href="<?= BASE_URL ?>profile.php"><i class="bi bi-person"></i> Profile</a></li>
+              <li><a class="dropdown-item" href="<?= BASE_URL ?>dashboard.php"><i class="bi bi-grid"></i> Dashboard</a></li>
+              <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
+                <li><a class="dropdown-item" href="<?= BASE_URL ?>admin.php"><i class="bi bi-shield-check"></i> Admin Panel</a></li>
+              <?php endif; ?>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="<?= BASE_URL ?>logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            </ul>
+          </div>
+        <?php else: ?>
+          <a href="<?= BASE_URL ?>login.php" class="btn btn-outline-custom btn-sm">Login</a>
+          <a href="<?= BASE_URL ?>register.php" class="btn btn-accent btn-sm">Register</a>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </nav>

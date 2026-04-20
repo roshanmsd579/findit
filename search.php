@@ -1,77 +1,130 @@
 <?php
-session_start();
-$pageTitle = 'Search Reports - FindIt';
+require_once __DIR__ . '/includes/db.php';
+$pageTitle = 'Search - ' . SITE_NAME;
 
-$reports = [
-    ['title' => 'Black Backpack', 'type' => 'lost', 'category' => 'electronics', 'location' => 'North Campus Gate', 'description' => 'Contains laptop and notebooks.'],
-    ['title' => 'Student ID Card', 'type' => 'found', 'category' => 'documents', 'location' => 'Library 2nd Floor', 'description' => 'Found near reading tables.'],
-    ['title' => 'Wireless Earbuds', 'type' => 'lost', 'category' => 'electronics', 'location' => 'Coffee Street', 'description' => 'White charging case with initials.'],
-    ['title' => 'Car Key Fob', 'type' => 'found', 'category' => 'accessories', 'location' => 'Parking Area C', 'description' => 'Toyota key with blue tag.'],
-    ['title' => 'Passport Sleeve', 'type' => 'lost', 'category' => 'documents', 'location' => 'Airport Shuttle', 'description' => 'Dark blue sleeve with passport and boarding pass.'],
-    ['title' => 'Sports Bottle', 'type' => 'found', 'category' => 'personal', 'location' => 'Community Gym', 'description' => 'Metal bottle with stickers.']
-];
+$q = trim($_GET['q'] ?? '');
+$type = $_GET['type'] ?? 'all';
+$category = $_GET['category'] ?? 'all';
+$location = $_GET['location'] ?? 'all';
+$status = $_GET['status'] ?? 'active';
+
+$where = [];
+$params = [];
+if ($q !== '') {
+    $where[] = '(r.title LIKE ? OR r.description LIKE ? OR r.campus_location LIKE ? OR u.name LIKE ?)';
+    $like = '%' . $q . '%';
+    array_push($params, $like, $like, $like, $like);
+}
+if (in_array($type, ['lost', 'found'], true)) {
+    $where[] = 'r.type = ?';
+    $params[] = $type;
+}
+if (array_key_exists($category, REPORT_CATEGORIES)) {
+    $where[] = 'r.category = ?';
+    $params[] = $category;
+}
+if (in_array($location, CAMPUS_LOCATIONS, true)) {
+    $where[] = 'r.campus_location = ?';
+    $params[] = $location;
+}
+if (in_array($status, ['active', 'claimed', 'verified', 'resolved', 'disputed', 'closed', 'all'], true) && $status !== 'all') {
+    $where[] = 'r.status = ?';
+    $params[] = $status;
+}
+
+$sql = "SELECT r.*, u.name AS user_name
+        FROM reports r
+        JOIN users u ON r.user_id = u.id";
+if ($where) {
+    $sql .= ' WHERE ' . implode(' AND ', $where);
+}
+$sql .= ' ORDER BY r.created_at DESC';
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$results = $stmt->fetchAll();
+
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/includes/navbar.php';
 ?>
-<!doctype html>
-<html lang="en">
-<?php include __DIR__ . '/includes/header.php'; ?>
-<body>
-<?php include __DIR__ . '/includes/navbar.php'; ?>
-
-<section class="py-5 mt-4">
-  <div class="container">
-    <div class="row g-4">
-      <div class="col-lg-3">
-        <aside class="filter-panel">
-          <h6>Search Tips</h6>
-          <p class="small text-muted-custom">Search by title, details, or location. Results update automatically as you type.</p>
-          <h6 class="mt-4">Quick Filters</h6>
-          <div class="d-flex flex-wrap gap-2" data-filter-group data-target="#search-results .report-card">
-            <button class="filter-tab active" data-type="all">All</button>
-            <button class="filter-tab" data-type="lost">Lost</button>
-            <button class="filter-tab" data-type="found">Found</button>
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4 col-xl-3">
+      <div class="filter-panel">
+        <h5 class="mb-3">Search Filters</h5>
+        <form id="search-filter-form" method="get">
+          <div class="mb-3">
+            <label class="form-label-custom">Keyword</label>
+            <input id="search-input" type="text" name="q" class="form-custom" value="<?= h($q) ?>" placeholder="Title, category, location">
           </div>
-        </aside>
+          <div class="mb-3">
+            <label class="form-label-custom">Type</label>
+            <select class="form-custom" name="type" id="type-filter">
+              <option value="all">All</option>
+              <option value="lost" <?= $type === 'lost' ? 'selected' : '' ?>>Lost</option>
+              <option value="found" <?= $type === 'found' ? 'selected' : '' ?>>Found</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Category</label>
+            <select class="form-custom" name="category" id="category-filter">
+              <option value="all">All Categories</option>
+              <?php foreach (REPORT_CATEGORIES as $key => $label): ?><option value="<?= h($key) ?>" <?= $category === $key ? 'selected' : '' ?>><?= h($label) ?></option><?php endforeach; ?>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Campus Location</label>
+            <select class="form-custom" name="location" id="location-filter">
+              <option value="all">Any</option>
+              <?php foreach (CAMPUS_LOCATIONS as $loc): ?><option value="<?= h($loc) ?>" <?= $location === $loc ? 'selected' : '' ?>><?= h($loc) ?></option><?php endforeach; ?>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Status</label>
+            <select class="form-custom" name="status" id="status-filter">
+              <option value="active" <?= $status === 'active' ? 'selected' : '' ?>>Active</option>
+              <option value="claimed" <?= $status === 'claimed' ? 'selected' : '' ?>>Claimed</option>
+              <option value="verified" <?= $status === 'verified' ? 'selected' : '' ?>>Verified</option>
+              <option value="resolved" <?= $status === 'resolved' ? 'selected' : '' ?>>Resolved</option>
+              <option value="disputed" <?= $status === 'disputed' ? 'selected' : '' ?>>Disputed</option>
+              <option value="all" <?= $status === 'all' ? 'selected' : '' ?>>All</option>
+            </select>
+          </div>
+          <div class="d-grid gap-2">
+            <button class="btn btn-accent" type="submit">Apply</button>
+            <button class="btn btn-outline-custom" type="button" id="reset-filters">Reset Filters</button>
+          </div>
+        </form>
       </div>
+    </div>
 
-      <div class="col-lg-9">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-          <div>
-            <p class="section-tag mb-1">Search Directory</p>
-            <h2 class="mb-0">Find Matching Reports</h2>
-          </div>
-          <div class="text-muted-custom">Results: <strong id="results-count"><?= count($reports); ?></strong></div>
-        </div>
-
-        <div class="mb-4">
-          <input id="search-input" type="text" class="form-control-custom" placeholder="Try: backpack, library, key, ID card...">
-        </div>
-
-        <div class="row g-4" id="search-results">
-          <?php foreach ($reports as $report): ?>
-            <div class="col-md-6 search-card">
-              <article class="report-card h-100 p-3" data-type="<?= $report['type']; ?>" data-category="<?= $report['category']; ?>" data-title="<?= htmlspecialchars($report['title']); ?>" data-description="<?= htmlspecialchars($report['description']); ?>" data-location="<?= htmlspecialchars($report['location']); ?>">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="<?= $report['type'] === 'lost' ? 'badge-lost' : 'badge-found'; ?>"><?= strtoupper($report['type']); ?></span>
-                  <small class="text-muted-custom"><?= htmlspecialchars($report['category']); ?></small>
+    <div class="col-lg-8 col-xl-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="section-title mb-0">Search Results</h1>
+        <span id="results-count" class="small text-muted"><?= count($results) ?> result(s)</span>
+      </div>
+      <div id="search-results" class="row g-4">
+        <?php foreach ($results as $row): ?>
+          <div class="col-md-6 search-item" data-type="<?= h($row['type']) ?>" data-category="<?= h($row['category']) ?>" data-status="<?= h($row['status']) ?>" data-location="<?= h(report_location($row)) ?>">
+            <a href="<?= BASE_URL ?>report-detail.php?id=<?= (int) $row['id'] ?>" class="report-card h-100">
+              <?php if ($row['photo']): ?><img src="<?= h(UPLOAD_URL . basename($row['photo'])) ?>" class="report-card-img" alt="<?= h($row['title']) ?>"><?php else: ?><div class="report-card-placeholder">📌</div><?php endif; ?>
+              <div class="p-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="<?= report_type_badge($row['type']) ?>"><?= strtoupper(h($row['type'])) ?></span>
+                  <span class="badge badge-status <?= status_badge_class($row['status']) ?>"><?= h(ucfirst($row['status'])) ?></span>
                 </div>
-                <h5 class="mb-2"><?= htmlspecialchars($report['title']); ?></h5>
-                <p class="text-muted-custom mb-2"><?= htmlspecialchars($report['description']); ?></p>
-                <p class="mb-0 small text-muted-custom"><i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($report['location']); ?></p>
-              </article>
-            </div>
-          <?php endforeach; ?>
-        </div>
-
-        <div id="empty-state" class="bg-card p-5 text-center d-none mt-4">
-          <i class="bi bi-search fs-1 d-block mb-3 text-muted-custom"></i>
-          <h5>No matching reports found</h5>
-          <p class="text-muted-custom mb-0">Try a broader keyword or remove specific filters.</p>
-        </div>
+                <h5 class="mb-2"><?= h($row['title']) ?></h5>
+                <p class="small text-muted mb-2"><?= h(mb_strimwidth($row['description'], 0, 95, '...')) ?></p>
+                <div class="small text-muted"><i class="bi bi-geo-alt"></i> <?= h(report_location($row)) ?></div>
+              </div>
+            </a>
+          </div>
+        <?php endforeach; ?>
+      </div>
+      <div id="empty-state" class="report-card p-4 text-center mt-4 <?= $results ? 'd-none' : '' ?>">
+        <h5>No matching reports found</h5>
+        <p class="text-muted mb-0">Try changing filters or keywords.</p>
       </div>
     </div>
   </div>
-</section>
-
+</div>
 <?php include __DIR__ . '/includes/footer.php'; ?>
-</body>
-</html>

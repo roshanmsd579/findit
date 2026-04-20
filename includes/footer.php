@@ -1,42 +1,74 @@
-<footer class="mt-5 pt-5 pb-3 border-top border-secondary-subtle bg-black">
+<?php require_once __DIR__ . '/config.php'; ?>
+<footer class="site-footer">
   <div class="container">
     <div class="row g-4">
-      <div class="col-md-4">
-        <h5 class="mb-3"><span class="brand-icon">◈</span> FindIt</h5>
-        <p class="text-secondary mb-0">A modern community platform helping people reconnect with lost belongings through trusted local reporting.</p>
+      <div class="col-lg-4">
+        <div class="footer-brand">◈ Find<strong>It</strong></div>
+        <p class="footer-desc">Official Lost &amp; Found portal for <?= h(UNIVERSITY) ?>. Helping campus community reunite with their belongings since 2025.</p>
       </div>
-      <div class="col-6 col-md-2">
-        <h6 class="text-uppercase text-secondary small">Platform</h6>
-        <ul class="list-unstyled small">
-          <li><a class="footer-link" href="/findit/index.php">Home</a></li>
-          <li><a class="footer-link" href="/findit/search.php">Search</a></li>
-          <li><a class="footer-link" href="/findit/reports.php">Reports</a></li>
+      <div class="col-6 col-lg-2">
+        <h6 class="footer-heading">Platform</h6>
+        <ul class="footer-links">
+          <li><a href="<?= BASE_URL ?>create-report.php">Report Lost</a></li>
+          <li><a href="<?= BASE_URL ?>create-report.php?type=found">Report Found</a></li>
+          <li><a href="<?= BASE_URL ?>search.php">Search</a></li>
+          <li><a href="<?= BASE_URL ?>reports.php">All Reports</a></li>
         </ul>
       </div>
-      <div class="col-6 col-md-3">
-        <h6 class="text-uppercase text-secondary small">Categories</h6>
-        <ul class="list-unstyled small">
-          <li><a class="footer-link" href="/findit/reports.php?category=electronics">Electronics</a></li>
-          <li><a class="footer-link" href="/findit/reports.php?category=documents">Documents</a></li>
-          <li><a class="footer-link" href="/findit/reports.php?category=accessories">Accessories</a></li>
+      <div class="col-6 col-lg-2">
+        <h6 class="footer-heading">Categories</h6>
+        <ul class="footer-links">
+          <li><a href="<?= BASE_URL ?>search.php?category=id_card">ID Cards</a></li>
+          <li><a href="<?= BASE_URL ?>search.php?category=laptop">Laptops</a></li>
+          <li><a href="<?= BASE_URL ?>search.php?category=phone">Phones</a></li>
+          <li><a href="<?= BASE_URL ?>search.php?category=keys">Keys</a></li>
         </ul>
       </div>
-      <div class="col-md-3">
-        <h6 class="text-uppercase text-secondary small">Account</h6>
-        <ul class="list-unstyled small mb-0">
-          <li><a class="footer-link" href="/findit/login.php">Login</a></li>
-          <li><a class="footer-link" href="/findit/register.php">Register</a></li>
-          <li><a class="footer-link" href="/findit/dashboard.php">Dashboard</a></li>
+      <div class="col-6 col-lg-2">
+        <h6 class="footer-heading">Account</h6>
+        <ul class="footer-links">
+          <li><a href="<?= BASE_URL ?>login.php">Login</a></li>
+          <li><a href="<?= BASE_URL ?>register.php">Register</a></li>
+          <li><a href="<?= BASE_URL ?>dashboard.php">Dashboard</a></li>
+          <li><a href="<?= BASE_URL ?>profile.php">Profile</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6 class="footer-heading">Support</h6>
+        <ul class="footer-links">
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="<?= BASE_URL ?>admin.php">Admin</a></li>
         </ul>
       </div>
     </div>
-
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center pt-4 mt-4 border-top border-secondary-subtle text-secondary small">
-      <span>&copy; <?= date('Y'); ?> FindIt. All rights reserved.</span>
-      <span>Built with &hearts; for the community</span>
+    <div class="footer-bottom">
+      <span>© 2026 FindIt — <?= h(UNIVERSITY) ?>. All rights reserved.</span>
+      <span>Built with campus trust and transparency</span>
     </div>
   </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3"></div>
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-dark">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">This action cannot be undone. Continue?</div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/findit/assets/js/main.js"></script>
+<script src="<?= BASE_URL ?>assets/js/main.js"></script>
+</body>
+</html>
