@@ -22,7 +22,7 @@ CREATE TABLE reports (
   id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id         INT UNSIGNED NOT NULL,
   type            ENUM('lost','found') NOT NULL,
-  category        ENUM('id_card','library_card','laptop','phone','wallet','keys','stationery','clothing','pet','person','other') NOT NULL,
+  category        ENUM('id_card','library_card','laptop','phone','wallet','keys','stationery','clothing','book','calculator','usb_drive','earbuds','other') NOT NULL,
   title           VARCHAR(255) NOT NULL,
   description     TEXT NOT NULL,
   photo           VARCHAR(255),

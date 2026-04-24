@@ -16,9 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
     $name = trim($firstName . ' ' . $lastName);
+    $namePattern = "/^[A-Za-z]+(?:[ '\-][A-Za-z]+)*$/";
 
     if ($studentId === '' || $name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '' || $department === '') {
         $error = 'Please fill all required fields.';
+    } elseif (!preg_match($namePattern, $firstName) || !preg_match($namePattern, $lastName)) {
+      $error = 'Name can contain letters only (spaces, apostrophes, and hyphens are allowed).';
     } elseif (!valid_uni_email($email)) {
         $error = 'Please use your university email.';
     } elseif (!in_array($department, DEPARTMENTS, true)) {
@@ -68,8 +71,8 @@ include __DIR__ . '/includes/header.php';
         <input type="text" name="student_id" class="form-custom" required>
       </div>
       <div class="row g-2 mb-3">
-        <div class="col-md-6"><label class="form-label-custom">First Name <span class="req">*</span></label><input type="text" name="first_name" class="form-custom" required></div>
-        <div class="col-md-6"><label class="form-label-custom">Last Name <span class="req">*</span></label><input type="text" name="last_name" class="form-custom" required></div>
+        <div class="col-md-6"><label class="form-label-custom">First Name <span class="req">*</span></label><input type="text" name="first_name" class="form-custom" pattern="[A-Za-z]+([ '\-][A-Za-z]+)*" title="Use letters only. Spaces, apostrophes, and hyphens are allowed." required></div>
+        <div class="col-md-6"><label class="form-label-custom">Last Name <span class="req">*</span></label><input type="text" name="last_name" class="form-custom" pattern="[A-Za-z]+([ '\-][A-Za-z]+)*" title="Use letters only. Spaces, apostrophes, and hyphens are allowed." required></div>
       </div>
       <div class="mb-3">
         <label class="form-label-custom">University Email <span class="req">*</span></label>

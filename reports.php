@@ -4,7 +4,7 @@ $pageTitle = 'Reports - ' . SITE_NAME;
 
 $type = $_GET['type'] ?? 'all';
 $category = $_GET['category'] ?? 'all';
-$status = $_GET['status'] ?? 'all';
+$status = $_GET['status'] ?? 'active';
 
 $where = [];
 $params = [];

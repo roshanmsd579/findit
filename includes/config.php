@@ -34,8 +34,10 @@ define('REPORT_CATEGORIES', [
     'keys' => 'Keys',
     'stationery' => 'Stationery',
     'clothing' => 'Clothing',
-    'pet' => 'Pet',
-    'person' => 'Person',
+    'book' => 'Book',
+    'calculator' => 'Calculator',
+    'usb_drive' => 'USB Drive',
+    'earbuds' => 'Earbuds',
     'other' => 'Other'
 ]);
 

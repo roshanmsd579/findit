@@ -45,7 +45,7 @@ function bootstrap_schema(PDO $pdo): void
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             user_id INT UNSIGNED NOT NULL,
             type ENUM('lost','found') NOT NULL,
-            category ENUM('id_card','library_card','laptop','phone','wallet','keys','stationery','clothing','pet','person','other') NOT NULL,
+            category ENUM('id_card','library_card','laptop','phone','wallet','keys','stationery','clothing','book','calculator','usb_drive','earbuds','other') NOT NULL,
             title VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
             photo VARCHAR(255) NULL,
@@ -229,6 +229,14 @@ function bootstrap_schema(PDO $pdo): void
     foreach ($alterStatements as $sql) {
         $pdo->exec($sql);
     }
+
+    // Retire legacy human/animal categories and old demo rows so listings stay college-item focused.
+    $pdo->exec("UPDATE reports
+                SET category = 'other', status = 'closed'
+                WHERE category IN ('pet', 'person')
+                   OR LOWER(title) REGEXP 'golden retriever|elderly woman|tabby cat|rahul jr|missing:'
+                   OR LOWER(description) REGEXP 'friendly dog|elderly lady|missing since friday'");
+    $pdo->exec("ALTER TABLE reports MODIFY COLUMN category ENUM('id_card','library_card','laptop','phone','wallet','keys','stationery','clothing','book','calculator','usb_drive','earbuds','other') NOT NULL");
 
     // Backfill campus_location for legacy rows that only had `location` data in older schemas.
     $pdo->exec("UPDATE reports SET campus_location = COALESCE(campus_location, 'Campus') WHERE campus_location IS NULL OR campus_location = ''");
