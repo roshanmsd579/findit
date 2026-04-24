@@ -20,6 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add_admin_note') {
         $pdo->prepare('UPDATE disputes SET admin_note=? WHERE id=?')->execute([trim($_POST['admin_note'] ?? ''), (int) $_POST['dispute_id']]);
     }
+    if ($action === 'delete_user') {
+        $userId = (int) $_POST['user_id'];
+        if ($userId !== $_SESSION['user_id']) { // Prevent admin from deleting themselves
+            $pdo->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
+        }
+    }
     redirect('admin.php');
 }
 
@@ -99,9 +105,13 @@ include __DIR__ . '/includes/navbar.php';
     </div>
 
     <div class="tab-pane fade" id="admin-users">
-      <div class="table-responsive admin-table"><table class="table table-dark mb-0"><thead><tr><th>ID</th><th>Student ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Reports</th><th>Joined</th></tr></thead><tbody>
+      <div class="table-responsive admin-table"><table class="table table-dark mb-0"><thead><tr><th>ID</th><th>Student ID</th><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Reports</th><th>Joined</th><th>Actions</th></tr></thead><tbody>
         <?php foreach ($users as $u): ?>
-          <tr><td><?= (int) $u['id'] ?></td><td><?= h($u['student_id']) ?></td><td><?= h($u['name']) ?></td><td><?= h($u['email']) ?></td><td><span class="badge badge-status <?= $u['role'] === 'admin' ? 'badge-disputed' : 'badge-active' ?>"><?= h(ucfirst($u['role'])) ?></span></td><td><?= h($u['department']) ?></td><td><?= (int) $u['report_count'] ?></td><td><?= h(human_date($u['created_at'])) ?></td></tr>
+          <tr><td><?= (int) $u['id'] ?></td><td><?= h($u['student_id']) ?></td><td><?= h($u['name']) ?></td><td><?= h($u['email']) ?></td><td><span class="badge badge-status <?= $u['role'] === 'admin' ? 'badge-disputed' : 'badge-active' ?>"><?= h(ucfirst($u['role'])) ?></span></td><td><?= h($u['department']) ?></td><td><?= (int) $u['report_count'] ?></td><td><?= h(human_date($u['created_at'])) ?></td><td>
+            <?php if ($u['id'] !== $_SESSION['user_id']): ?>
+            <form method="post" class="d-inline delete-form"><input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>"><button class="btn btn-sm btn-danger btn-delete" type="submit">Delete</button></form>
+            <?php endif; ?>
+          </td></tr>
         <?php endforeach; ?>
       </tbody></table></div>
     </div>
