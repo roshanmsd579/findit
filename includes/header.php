@@ -20,3 +20,6 @@ $siteTitle = $pageTitle ?? SITE_NAME . ' - Campus Lost & Found';
   <link href="<?= BASE_URL ?>assets/css/custom.css" rel="stylesheet">
 </head>
 <body>
+<script src="<?= BASE_URL ?>assets/js/main.js" defer></script>
+</body>
+</html>

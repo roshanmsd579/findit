@@ -71,6 +71,7 @@ include __DIR__ . '/includes/header.php';
       </form>
       <p class="mb-0 text-muted small">New here? <a href="<?= BASE_URL ?>register.php">Create an account</a></p>
     </div>
+    <?php include __DIR__ . '/includes/theme-toggle.php'; ?>
   </div>
 </div>
 </body>

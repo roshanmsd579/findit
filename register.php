@@ -96,6 +96,7 @@ include __DIR__ . '/includes/header.php';
       <button type="submit" class="btn btn-accent w-100">Create Account</button>
       <p class="small text-muted mt-3 mb-0">Already have an account? <a href="<?= BASE_URL ?>login.php">Login</a></p>
     </form>
+    <?php include __DIR__ . '/includes/theme-toggle.php'; ?>
   </div>
 </div>
 </body>

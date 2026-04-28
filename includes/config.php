@@ -9,7 +9,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 
 define('SITE_NAME', 'FindIt');
-define('UNIVERSITY', 'Your University Name');
+define('UNIVERSITY', 'Universal');
 define('UNI_EMAIL', '@university.edu');
 define('BASE_URL', 'http://localhost/findit/');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
